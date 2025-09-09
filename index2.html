@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Portal v3</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .active-subject {
+            background-color: #e0f2fe;
+            color: #0c4a6e;
+            font-weight: 600;
+        }
+        .source-item.selected { background-color: #dbeafe; }
+        .tag {
+            display: inline-block;
+            padding: 0.1rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-right: 0.5rem;
+        }
+        .todo-item.completed span {
+            text-decoration: line-through;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Auth Screen (Login/Sign Up) -->
+    <div id="auth-screen" class="flex items-center justify-center h-screen">
+        <div class="w-full max-w-md p-6 sm:p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <!-- Login Form -->
+            <form id="login-form">
+                <h2 class="text-2xl font-bold text-center">Login</h2>
+                <div id="login-error" class="hidden p-2 my-2 text-sm text-red-700 bg-red-100 rounded"></div>
+                <div class="mt-4 space-y-4">
+                    <input id="login-email" type="email" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email">
+                    <input id="login-password" type="password" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password">
+                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Login</button>
+                </div>
+                <p class="mt-4 text-sm text-center">Don't have an account? <a href="#" id="show-signup" class="font-medium text-blue-600 hover:underline">Sign up</a></p>
+            </form>
+            <!-- Sign Up Form -->
+            <form id="signup-form" class="hidden">
+                <h2 class="text-2xl font-bold text-center">Sign Up</h2>
+                <div id="signup-error" class="hidden p-2 my-2 text-sm text-red-700 bg-red-100 rounded"></div>
+                <div class="mt-4 space-y-4">
+                    <input id="signup-email" type="email" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Email">
+                    <input id="signup-password" type="password" required class="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Password">
+                    <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Sign Up</button>
+                </div>
+                <p class="mt-4 text-sm text-center">Already have an account? <a href="#" id="show-login" class="font-medium text-blue-600 hover:underline">Login</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="hidden relative min-h-screen md:flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-72 bg-white border-r border-gray-200 flex flex-col fixed inset-y-0 left-0 z-30 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:w-64 md:translate-x-0">
+            <!-- Mobile Close Button -->
+            <button id="close-sidebar-btn" class="md:hidden absolute top-2 right-2 p-2 text-gray-500 hover:text-gray-800">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h1 class="text-xl font-bold text-gray-900">My Portal</h1>
+            </div>
+            <nav id="subject-list" class="flex-1 p-4 space-y-2 overflow-y-auto">
+                 <div>
+                    <h2 class="px-2 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Subjects</h2>
+                    <a href="#" data-subject="Maths" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M12 8h.01M15 8h.01M15 14h.01"></path></svg>
+                        <span>Maths</span>
+                    </a>
+                    <a href="#" data-subject="Data Structures" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                        <span>Data Structures</span>
+                    </a>
+                    <a href="#" data-subject="OOPS" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                         <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg>
+                        <span>OOPS</span>
+                    </a>
+                    <a href="#" data-subject="COA" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path></svg>
+                        <span>COA</span>
+                    </a>
+                    <a href="#" data-subject="EOIC" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>EOIC</span>
+                    </a>
+                    <a href="#" data-subject="DPS" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9V3m0 18a9 9 0 009-9M3 12a9 9 0 009 9"></path></svg>
+                        <span>DPS</span>
+                    </a>
+                    <a href="#" data-subject="FEWD" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7a8 8 0 0116 0"></path></svg>
+                        <span>FEWD</span>
+                    </a>
+                     <a href="#" data-subject="IDT" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14l9-5-9-5-9 5 9 5z"></path><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-9.998 12.078 12.078 0 01.665-6.479L12 14z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0v6"></path></svg>
+                        <span>IDT</span>
+                    </a>
+                     <a href="#" data-subject="Kannada" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9l-3.415 3.416m12.828 2.828L19 9l-3.416 3.416m0 0a18.022 18.022 0 01-3.172 4.172l-3.415-3.415m0 0L9 19.586 12.586 16l-3.172-3.172z"></path></svg>
+                        <span>Kannada</span>
+                    </a>
+                </div>
+                <div>
+                    <h2 class="px-2 mt-4 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Lab Section</h2>
+                    <a href="#" data-subject="FEWD Lab" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                        <span>FEWD</span>
+                    </a>
+                    <a href="#" data-subject="R Lab" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                        <span>R</span>
+                    </a>
+                    <a href="#" data-subject="DS Lab" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7a8 8 0 0116 0M12 11v6"></path></svg>
+                        <span>DS</span>
+                    </a>
+                    <a href="#" data-subject="OOPS Lab" class="subject-item flex items-center px-4 py-2 text-gray-700 rounded-md hover:bg-gray-100">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        <span>OOPS</span>
+                    </a>
+                </div>
+            </nav>
+            <div id="all-tasks-container" class="p-4 border-t border-gray-200 overflow-y-auto" style="max-height: 25%;">
+                <h2 class="px-2 mb-2 text-xs font-semibold tracking-wider text-gray-400 uppercase">Urgent & Upcoming</h2>
+                <ul id="all-tasks-list" class="space-y-2 text-sm">
+                    <!-- Aggregated tasks will be injected here -->
+                </ul>
+            </div>
+            <div id="user-info" class="px-4 py-3 border-t border-gray-200 mt-auto">
+                 <p id="user-email" class="text-sm font-medium text-gray-700 truncate"></p>
+                 <button id="sign-out-btn" class="w-full mt-2 px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-md hover:bg-red-700">Sign Out</button>
+            </div>
+        </aside>
+        
+        <div id="sidebar-overlay" class="hidden md:hidden fixed inset-0 bg-black bg-opacity-50 z-20"></div>
+
+        <!-- Main Content -->
+        <main id="main-content" class="flex-1 p-4 pt-16 md:pt-8 md:p-8 overflow-y-auto relative">
+             <!-- Mobile Hamburger Menu Button -->
+            <button id="hamburger-btn" class="md:hidden absolute top-4 left-4 z-10 p-2 bg-white rounded-md shadow">
+                <svg class="w-6 h-6 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+
+            <div id="welcome-screen" class="flex flex-col items-center justify-center h-full text-center">
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Mid-Semester Exam Countdown</h2>
+                <p class="mt-2 text-gray-500 mb-8">Time remaining until September 15, 2025</p>
+                <div id="countdown-timer" class="flex flex-wrap justify-center gap-4 text-center">
+                    <div class="bg-white p-4 rounded-lg shadow-md min-w-[5rem]">
+                        <div id="days" class="text-4xl font-bold text-blue-600">00</div>
+                        <div class="text-sm uppercase text-gray-500">Days</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md min-w-[5rem]">
+                        <div id="hours" class="text-4xl font-bold text-blue-600">00</div>
+                        <div class="text-sm uppercase text-gray-500">Hours</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md min-w-[5rem]">
+                        <div id="minutes" class="text-4xl font-bold text-blue-600">00</div>
+                        <div class="text-sm uppercase text-gray-500">Minutes</div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-md min-w-[5rem]">
+                        <div id="seconds" class="text-4xl font-bold text-blue-600">00</div>
+                        <div class="text-sm uppercase text-gray-500">Seconds</div>
+                    </div>
+                </div>
+                <p id="countdown-finished" class="hidden mt-8 text-2xl font-bold text-green-600">The exam period has begun. Good luck!</p>
+                <p class="mt-8 text-gray-500">Select a subject from the sidebar to get started.</p>
+            </div>
+            <div id="subject-details" class="hidden h-full flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="subject-title" class="text-2xl md:text-3xl font-bold text-gray-900"></h2>
+                    <span id="save-status" class="text-sm text-gray-500 transition-opacity duration-300 opacity-0"></span>
+                </div>
+                <div class="flex-1 flex flex-col mb-6" style="min-height: 200px;">
+                     <label for="notes-textarea" class="text-lg font-semibold text-gray-800 mb-2">Notes</label>
+                    <textarea id="notes-textarea" class="flex-1 w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"></textarea>
+                </div>
+                 <div class="flex-1 flex flex-col mb-6" style="min-height: 200px;">
+                    <label for="study-planner-textarea" class="text-lg font-semibold text-gray-800 mb-2">Study Planner</label>
+                    <div class="relative">
+                        <textarea id="study-planner-textarea" class="flex-1 w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Track your study sources. Type '/' to see options..."></textarea>
+                        <div id="sources-popup" class="hidden absolute z-10 w-48 bg-white rounded-md shadow-lg border border-gray-200 text-sm">
+                            <!-- Sources will be injected here by JS -->
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-1 flex flex-col mb-6" style="min-height: 200px;">
+                     <label for="tasks-textarea" class="text-lg font-semibold text-gray-800 mb-2">Tasks</label>
+                    <textarea id="tasks-textarea" class="flex-1 w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition" placeholder="Enter tasks here. Use (due: yyyy-mm-dd) for deadlines or (urgent) for priority."></textarea>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Attached Files</h3>
+                     <div class="p-4 border-2 border-dashed border-gray-300 rounded-lg">
+                        <div class="flex items-center justify-center">
+                           <label for="file-upload" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                              <span>Upload files</span>
+                              <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple>
+                           </label>
+                        </div>
+                        <p class="text-xs text-gray-500 text-center mt-1">PDF, PPT, PNG, JPG, etc. (File names are saved, not the content)</p>
+                     </div>
+                    <ul id="file-list" class="mt-4 space-y-2"></ul>
+                </div>
+                
+                <!-- To-Do List Section -->
+                <div id="todo-section" class="mt-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">To-Do List</h3>
+                    <form id="add-todo-form" class="flex gap-2">
+                        <input id="add-todo-input" type="text" class="flex-grow p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Add a new task...">
+                        <button type="submit" class="px-4 py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700">Add</button>
+                    </form>
+                    <ul id="todo-list" class="mt-4 space-y-2">
+                        <!-- To-Do items will be injected here -->
+                    </ul>
+                </div>
+
+                <!-- Progress Bars Section -->
+                <div id="progress-bars-section" class="mt-6">
+                    <!-- Progress bars will be injected here -->
+                </div>
+            </div>
+             <div id="loading-spinner" class="hidden absolute inset-0 bg-gray-50 bg-opacity-75 flex items-center justify-center z-50">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Source Selection Modal -->
+    <div id="source-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-40">
+      <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+          <h3 class="text-lg leading-6 font-medium text-gray-900">Select Source for File</h3>
+          <p class="text-sm text-gray-500 mt-2" id="modal-filename"></p>
+          <div id="modal-source-options" class="mt-4 space-y-2"></div>
+          <div class="items-center px-4 py-3">
+            <button id="modal-cancel-btn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md w-full hover:bg-gray-300">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot, arrayUnion, arrayRemove, collection, query } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- DOM ELEMENTS ---
+        const authScreen = document.getElementById('auth-screen');
+        const appContainer = document.getElementById('app-container');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const subjectList = document.getElementById('subject-list');
+        const mainContent = document.getElementById('main-content');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const subjectDetails = document.getElementById('subject-details');
+        const subjectTitle = document.getElementById('subject-title');
+        const notesTextarea = document.getElementById('notes-textarea');
+        const studyPlannerTextarea = document.getElementById('study-planner-textarea');
+        const tasksTextarea = document.getElementById('tasks-textarea');
+        const fileUpload = document.getElementById('file-upload');
+        const fileListElem = document.getElementById('file-list');
+        const saveStatus = document.getElementById('save-status');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const sourceModal = document.getElementById('source-modal');
+        const modalFilename = document.getElementById('modal-filename');
+        const modalSourceOptions = document.getElementById('modal-source-options');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+        const userEmailDisplay = document.getElementById('user-email');
+        const signOutBtn = document.getElementById('sign-out-btn');
+        const showSignup = document.getElementById('show-signup');
+        const showLogin = document.getElementById('show-login');
+        const sidebar = document.getElementById('sidebar');
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const closeSidebarBtn = document.getElementById('close-sidebar-btn');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const addTodoForm = document.getElementById('add-todo-form');
+        const addTodoInput = document.getElementById('add-todo-input');
+        const todoListElem = document.getElementById('todo-list');
+        const allTasksList = document.getElementById('all-tasks-list');
+
+        // --- APP STATE ---
+        let db, auth;
+        let currentSubject = null;
+        let userId = null;
+        let noteDebounceTimeout, plannerDebounceTimeout, tasksDebounceTimeout;
+        let unsubscribe, unsubscribeAllTasks;
+        const sources = ['Academic pal', 'mithil notes', 'LMS', 'own notes', 'others'];
+        let resolveFileUpload;
+        let countdownInterval;
+        let sourcePopupOpen = false;
+        let selectedSourceIndex = -1;
+
+        // --- FIREBASE CONFIG (Your personal configuration) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCdTqMliXW7ZK4s3IdNE2TPf724lWdAmaQ",
+            authDomain: "notestack-47cc7.firebaseapp.com",
+            projectId: "notestack-47cc7",
+            storageBucket: "notestack-47cc7.appspot.com",
+            messagingSenderId: "336248626285",
+            appId: "1:336248626285:web:2dbfe4f3135ec2fe8fb364"
+        };
+        const appId = firebaseConfig.projectId;
+
+        // --- INITIALIZATION ---
+        async function initialize() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setupAuthListener();
+                setupAuthForms();
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                authScreen.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-lg"><strong>Error:</strong> Could not connect to the database.</div>`;
+            }
+        }
+        
+        function setupAuthListener() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    userId = user.uid;
+                    authScreen.classList.add('hidden');
+                    appContainer.classList.remove('hidden');
+                    userEmailDisplay.textContent = user.email;
+                    startCountdownTimer();
+                    setupAppEventListeners();
+                    setupAllTasksListener();
+                    toggleSidebar(false); // Ensure sidebar is closed on login
+                } else {
+                    userId = null;
+                    authScreen.classList.remove('hidden');
+                    appContainer.classList.add('hidden');
+                    if (unsubscribe) unsubscribe();
+                    if (unsubscribeAllTasks) unsubscribeAllTasks();
+                    currentSubject = null;
+                    welcomeScreen.classList.remove('hidden');
+                    subjectDetails.classList.add('hidden');
+                    toggleSidebar(false); // Ensure sidebar is closed on logout
+                }
+            });
+        }
+        
+        function setupAuthForms() {
+            showSignup.addEventListener('click', (e) => { e.preventDefault(); loginForm.classList.add('hidden'); signupForm.classList.remove('hidden'); });
+            showLogin.addEventListener('click', (e) => { e.preventDefault(); signupForm.classList.add('hidden'); loginForm.classList.remove('hidden'); });
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    document.getElementById('login-error').textContent = error.message;
+                    document.getElementById('login-error').classList.remove('hidden');
+                }
+            });
+
+            signupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } catch (error) {
+                    document.getElementById('signup-error').textContent = error.message;
+                    document.getElementById('signup-error').classList.remove('hidden');
+                }
+            });
+
+            signOutBtn.addEventListener('click', () => signOut(auth));
+        }
+
+        function toggleSidebar(show) {
+             if (show) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+        }
+
+        // --- EVENT LISTENERS (for the main app) ---
+        function setupAppEventListeners() {
+            hamburgerBtn.addEventListener('click', () => toggleSidebar(true));
+            closeSidebarBtn.addEventListener('click', () => toggleSidebar(false));
+            sidebarOverlay.addEventListener('click', () => toggleSidebar(false));
+
+            subjectList.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = e.target.closest('.subject-item');
+                if (target && target.dataset.subject) selectSubject(target.dataset.subject);
+            });
+            notesTextarea.addEventListener('input', () => {
+                showSaveStatus('Saving...');
+                clearTimeout(noteDebounceTimeout);
+                noteDebounceTimeout = setTimeout(() => {
+                    saveField('notes', notesTextarea.value);
+                    parseAndCreateTrackers();
+                }, 1000); 
+            });
+            tasksTextarea.addEventListener('input', () => {
+                showSaveStatus('Saving...');
+                clearTimeout(tasksDebounceTimeout);
+                tasksDebounceTimeout = setTimeout(() => saveField('tasks', tasksTextarea.value), 1000); 
+            });
+            studyPlannerTextarea.addEventListener('input', handlePlannerInput);
+            studyPlannerTextarea.addEventListener('keydown', handlePlannerKeydown);
+            studyPlannerTextarea.addEventListener('blur', hideSourcesPopup);
+            
+            fileUpload.addEventListener('change', handleFileSelection);
+            modalCancelBtn.addEventListener('click', () => { closeSourceModal(); resolveFileUpload(null); });
+            
+            mainContent.addEventListener('click', handleProgressButtonClick);
+            addTodoForm.addEventListener('submit', handleAddTodo);
+        }
+
+        function startCountdownTimer() {
+            const countdownDate = new Date("Sep 15, 2025 00:00:00").getTime();
+            const elements = {
+                d: document.getElementById('days'), h: document.getElementById('hours'),
+                m: document.getElementById('minutes'), s: document.getElementById('seconds'),
+                timer: document.getElementById('countdown-timer'), msg: document.getElementById('countdown-finished')
+            };
+            if (countdownInterval) clearInterval(countdownInterval);
+            countdownInterval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = countdownDate - now;
+                if (distance < 0) {
+                    clearInterval(countdownInterval);
+                    elements.timer.classList.add('hidden');
+                    elements.msg.classList.remove('hidden');
+                    return;
+                }
+                const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+                elements.d.textContent = String(d).padStart(2, '0');
+                elements.h.textContent = String(h).padStart(2, '0');
+                elements.m.textContent = String(m).padStart(2, '0');
+                elements.s.textContent = String(s).padStart(2, '0');
+            }, 1000);
+        }
+
+        function selectSubject(subjectId) {
+            if (currentSubject === subjectId) return;
+            if (unsubscribe) unsubscribe();
+            currentSubject = subjectId;
+            document.querySelectorAll('.subject-item').forEach(item => {
+                item.classList.toggle('active-subject', item.dataset.subject === subjectId);
+            });
+            
+            welcomeScreen.classList.add('hidden');
+            subjectDetails.classList.remove('hidden');
+            loadingSpinner.classList.remove('hidden');
+
+            subjectTitle.textContent = subjectId;
+            notesTextarea.value = ''; 
+            studyPlannerTextarea.value = ''; 
+            tasksTextarea.value = '';
+            fileListElem.innerHTML = '';
+            todoListElem.innerHTML = '';
+
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            unsubscribe = onSnapshot(docRef, (doc) => {
+                loadingSpinner.classList.add('hidden');
+                const data = doc.exists() ? doc.data() : {};
+                notesTextarea.value = data.notes || '';
+                studyPlannerTextarea.value = data.studyPlanner || '';
+                tasksTextarea.value = data.tasks || '';
+                renderFileList(data.files || []);
+                renderProgressBars(data.progressTrackers || []);
+                renderTodoList(data.todos || []);
+            }, (error) => {
+                console.error("Error fetching data:", error);
+                loadingSpinner.classList.add('hidden');
+                showSaveStatus("Error loading data", true);
+            });
+
+            if (window.innerWidth < 768) {
+                toggleSidebar(false);
+            }
+        }
+        
+        // --- TASK AGGREGATION LOGIC ---
+        function setupAllTasksListener() {
+            if (!userId) return;
+            const q = query(collection(db, `artifacts/${appId}/users/${userId}/subjects`));
+            
+            unsubscribeAllTasks = onSnapshot(q, (querySnapshot) => {
+                let allTasks = [];
+                querySnapshot.forEach((doc) => {
+                    const subjectName = doc.id;
+                    const tasksText = doc.data().tasks;
+                    if (tasksText) {
+                        const parsedTasks = parseTasksFromText(tasksText, subjectName);
+                        allTasks = allTasks.concat(parsedTasks);
+                    }
+                });
+                const sortedTasks = sortAggregatedTasks(allTasks);
+                renderAllTasks(sortedTasks);
+            });
+        }
+        
+        function parseTasksFromText(text, subject) {
+            const lines = text.split('\n').filter(line => line.trim() !== '');
+            const tasks = [];
+            const urgentRegex = /\((urgent|emergency)\)/i;
+            const dueRegex = /\(due:\s*(\d{4}-\d{2}-\d{2})\)/;
+
+            lines.forEach(line => {
+                const isUrgent = urgentRegex.test(line);
+                const dueDateMatch = line.match(dueRegex);
+                
+                if (isUrgent || dueDateMatch) {
+                    tasks.push({
+                        text: line.replace(urgentRegex, '').replace(dueRegex, '').trim(),
+                        subject: subject,
+                        deadline: dueDateMatch ? new Date(dueDateMatch[1] + 'T00:00:00') : null, // Set time to start of day
+                        isUrgent: isUrgent
+                    });
+                }
+            });
+            return tasks;
+        }
+
+        function sortAggregatedTasks(tasks) {
+            return tasks.sort((a, b) => {
+                if (a.isUrgent && !b.isUrgent) return -1;
+                if (!a.isUrgent && b.isUrgent) return 1;
+                if (a.deadline && b.deadline) return a.deadline - b.deadline;
+                if (a.deadline && !b.deadline) return -1;
+                if (!a.deadline && b.deadline) return 1;
+                return 0;
+            });
+        }
+
+        function renderAllTasks(tasks) {
+            allTasksList.innerHTML = '';
+            if (tasks.length === 0) {
+                allTasksList.innerHTML = `<li class="text-gray-500 px-2">No urgent or upcoming tasks.</li>`;
+                return;
+            }
+            
+            tasks.forEach(task => {
+                const li = document.createElement('li');
+                li.className = 'p-2 bg-gray-100 rounded-md';
+                let deadlineHtml = '';
+                if (task.deadline) {
+                    const formattedDate = task.deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    deadlineHtml = `<span class="text-xs text-blue-600 font-semibold">${formattedDate}</span>`;
+                }
+                li.innerHTML = `
+                    <div class="flex items-center justify-between">
+                        <div class="truncate">
+                           ${task.isUrgent ? '<span class="text-red-500 font-bold mr-1">!</span>' : ''}
+                           <span class="truncate">${task.text}</span>
+                        </div>
+                        ${deadlineHtml}
+                    </div>
+                    <div class="text-xs text-gray-500 mt-1">${task.subject}</div>
+                `;
+                allTasksList.appendChild(li);
+            });
+        }
+
+
+        // --- STUDY PLANNER & PROGRESS BAR LOGIC ---
+        function handlePlannerInput() {
+            // Standard save for the text area itself
+            showSaveStatus('Saving...');
+            clearTimeout(plannerDebounceTimeout);
+            plannerDebounceTimeout = setTimeout(() => {
+                saveField('studyPlanner', studyPlannerTextarea.value);
+                // After saving, also check for new progress bars
+                parseAndCreateTrackers();
+            }, 1000);
+            
+            // Handle the '/' popup for sources
+            const cursorPos = studyPlannerTextarea.selectionStart;
+            const textBeforeCursor = studyPlannerTextarea.value.substring(0, cursorPos);
+            
+            if (textBeforeCursor.endsWith('/')) {
+                // Check if it's a progress bar pattern, if so, don't show source popup
+                const potentialTracker = textBeforeCursor.match(/\/\w+\s*\(\d+\/\d+\)$/);
+                if (!potentialTracker) {
+                    showSourcesPopup();
+                }
+            } else {
+                hideSourcesPopup();
+            }
+        }
+
+        function handlePlannerKeydown(e) {
+            if (!sourcePopupOpen) return;
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedSourceIndex = (selectedSourceIndex + 1) % sources.length;
+                updatePopupSelection();
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedSourceIndex = (selectedSourceIndex - 1 + sources.length) % sources.length;
+                updatePopupSelection();
+            } else if (e.key === 'Enter' || e.key === 'Tab') {
+                e.preventDefault();
+                if (selectedSourceIndex > -1) {
+                    selectSource(sources[selectedSourceIndex]);
+                }
+            } else if (e.key === 'Escape') {
+                hideSourcesPopup();
+            }
+        }
+
+        function showSourcesPopup() {
+            const sourcesPopup = document.getElementById('sources-popup');
+            sourcesPopup.innerHTML = '';
+            sources.forEach(source => {
+                const item = document.createElement('div');
+                item.textContent = source;
+                item.className = 'p-2 hover:bg-gray-100 cursor-pointer source-item';
+                item.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    selectSource(source);
+                });
+                sourcesPopup.appendChild(item);
+            });
+            sourcesPopup.classList.remove('hidden');
+            sourcePopupOpen = true;
+            selectedSourceIndex = -1;
+        }
+
+        function hideSourcesPopup() {
+            setTimeout(() => {
+                document.getElementById('sources-popup').classList.add('hidden');
+                sourcePopupOpen = false;
+            }, 150);
+        }
+
+        function selectSource(source) {
+            const currentText = studyPlannerTextarea.value;
+            const cursorPos = studyPlannerTextarea.selectionStart;
+            const textBefore = currentText.substring(0, cursorPos - 1);
+            const textAfter = currentText.substring(cursorPos);
+            
+            const newText = `${textBefore}[${source}] ${textAfter}`;
+            studyPlannerTextarea.value = newText;
+            
+            const newCursorPos = textBefore.length + source.length + 3;
+            studyPlannerTextarea.focus();
+            studyPlannerTextarea.setSelectionRange(newCursorPos, newCursorPos);
+
+            hideSourcesPopup();
+            handlePlannerInput(); // Trigger save after selection
+        }
+        
+        function updatePopupSelection() {
+            const items = document.getElementById('sources-popup').querySelectorAll('.source-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('selected', index === selectedSourceIndex);
+            });
+        }
+        
+        async function parseAndCreateTrackers() {
+            if (!currentSubject || !userId) return;
+
+            const combinedText = notesTextarea.value + '\n' + studyPlannerTextarea.value;
+            const regex = /\/(\w+)\s*\((\d+)\/(\d+)\)/g;
+            let match;
+            const parsedTrackers = [];
+
+            while ((match = regex.exec(combinedText)) !== null) {
+                parsedTrackers.push({
+                    name: match[1],
+                    current: parseInt(match[2], 10),
+                    total: parseInt(match[3], 10)
+                });
+            }
+
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            const docSnap = await getDoc(docRef);
+            const existingTrackers = docSnap.exists() ? docSnap.data().progressTrackers || [] : [];
+            
+            const parsedMap = new Map(parsedTrackers.map(t => [t.name, t]));
+            const trackersToKeep = existingTrackers.filter(existing => parsedMap.has(existing.name));
+            parsedTrackers.forEach(parsed => {
+                if (!trackersToKeep.some(t => t.name === parsed.name)) {
+                    trackersToKeep.push(parsed);
+                }
+            });
+
+            if (trackersToKeep.length !== existingTrackers.length || 
+                !trackersToKeep.every(t1 => existingTrackers.some(t2 => t1.name === t2.name && t1.current === t2.current && t1.total === t2.total))) {
+                await setDoc(docRef, { progressTrackers: trackersToKeep }, { merge: true });
+            }
+        }
+
+        function renderProgressBars(trackers) {
+            const container = document.getElementById('progress-bars-section');
+            if (!trackers || trackers.length === 0) {
+                container.innerHTML = ''; // Clear if no trackers
+                return;
+            }
+
+            container.innerHTML = '<h3 class="text-lg font-semibold text-gray-800 mb-2">Progress Bars</h3>';
+            const grid = document.createElement('div');
+            grid.className = 'space-y-3';
+
+            trackers.forEach(tracker => {
+                const percentage = tracker.total > 0 ? (tracker.current / tracker.total) * 100 : 0;
+                const item = document.createElement('div');
+                item.className = 'p-3 bg-gray-100 rounded-lg';
+                item.innerHTML = `
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm font-medium text-gray-700">${tracker.name}</span>
+                        <span class="text-sm font-medium text-gray-500">${tracker.current} / ${tracker.total}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                         <button data-tracker-name="${tracker.name}" data-change="-1" class="progress-btn p-1 text-red-500 rounded-full hover:bg-red-100">-</button>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                        <button data-tracker-name="${tracker.name}" data-change="1" class="progress-btn p-1 text-green-500 rounded-full hover:bg-green-100">+</button>
+                    </div>
+                `;
+                grid.appendChild(item);
+            });
+            container.appendChild(grid);
+        }
+
+        async function handleProgressButtonClick(e) {
+            const button = e.target.closest('.progress-btn');
+            if (!button) return;
+
+            const trackerName = button.dataset.trackerName;
+            const change = parseInt(button.dataset.change, 10);
+            
+            if (!currentSubject || !userId) return;
+
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return;
+
+            const trackers = docSnap.data().progressTrackers || [];
+            const trackerToUpdate = trackers.find(t => t.name === trackerName);
+
+            if (trackerToUpdate) {
+                const newCurrent = trackerToUpdate.current + change;
+                if (newCurrent >= 0 && newCurrent <= trackerToUpdate.total) {
+                    trackerToUpdate.current = newCurrent;
+                    await setDoc(docRef, { progressTrackers: trackers }, { merge: true });
+                }
+            }
+        }
+
+        // --- TO-DO LIST LOGIC ---
+        async function handleAddTodo(e) {
+            e.preventDefault();
+            const taskText = addTodoInput.value.trim();
+            if (taskText === '' || !currentSubject || !userId) return;
+
+            const newTodo = {
+                id: Date.now().toString(),
+                text: taskText,
+                completed: false
+            };
+            
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            await setDoc(docRef, { todos: arrayUnion(newTodo) }, { merge: true });
+            addTodoInput.value = '';
+        }
+
+        function renderTodoList(todos) {
+            todoListElem.innerHTML = '';
+            if (!todos || todos.length === 0) {
+                todoListElem.innerHTML = `<li class="text-sm text-gray-500">No tasks yet.</li>`;
+                return;
+            }
+
+            todos.forEach(todo => {
+                const li = document.createElement('li');
+                li.className = `todo-item flex items-center justify-between p-2 bg-gray-100 rounded-md ${todo.completed ? 'completed' : ''}`;
+                li.innerHTML = `
+                    <div class="flex items-center">
+                        <input type="checkbox" data-id="${todo.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" ${todo.completed ? 'checked' : ''}>
+                        <span class="ml-3 text-sm font-medium">${todo.text}</span>
+                    </div>
+                    <button data-id="${todo.id}" class="remove-todo-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                `;
+                li.querySelector('input[type="checkbox"]').addEventListener('change', (e) => toggleTodoStatus(todo.id, e.target.checked));
+                li.querySelector('.remove-todo-btn').addEventListener('click', () => removeTodo(todo.id));
+                todoListElem.appendChild(li);
+            });
+        }
+        
+        async function toggleTodoStatus(todoId, isCompleted) {
+            if (!currentSubject || !userId) return;
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return;
+
+            const todos = docSnap.data().todos || [];
+            const updatedTodos = todos.map(todo => todo.id === todoId ? { ...todo, completed: isCompleted } : todo);
+            await setDoc(docRef, { todos: updatedTodos }, { merge: true });
+        }
+
+        async function removeTodo(todoId) {
+             if (!currentSubject || !userId) return;
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return;
+
+            const todos = docSnap.data().todos || [];
+            const todoToRemove = todos.find(t => t.id === todoId);
+            if (todoToRemove) {
+                 await setDoc(docRef, { todos: arrayRemove(todoToRemove) }, { merge: true });
+            }
+        }
+
+        // --- FILE HANDLING ---
+        async function handleFileSelection(e) {
+            const selectedFiles = Array.from(e.target.files);
+            if (selectedFiles.length === 0) return;
+
+            for (const file of selectedFiles) {
+                const source = await promptForSource(file);
+                if (source) {
+                    const fileData = { name: file.name, size: file.size, type: file.type, source: source };
+                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+                    await setDoc(docRef, { files: arrayUnion(fileData) }, { merge: true });
+                }
+            }
+            e.target.value = '';
+        }
+
+        function promptForSource(file) {
+            return new Promise((resolve) => {
+                resolveFileUpload = resolve;
+                modalFilename.textContent = file.name;
+                modalSourceOptions.innerHTML = '';
+                sources.forEach(source => {
+                    const button = document.createElement('button');
+                    button.textContent = source;
+                    button.className = 'w-full px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600';
+                    button.onclick = () => { closeSourceModal(); resolve(source); };
+                    modalSourceOptions.appendChild(button);
+                });
+                sourceModal.classList.remove('hidden');
+            });
+        }
+
+        function closeSourceModal() { sourceModal.classList.add('hidden'); }
+        
+        async function removeFile(fileData) {
+            if (!currentSubject || !userId) return;
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            await setDoc(docRef, { files: arrayRemove(fileData) }, { merge: true });
+            showSaveStatus('File removed!');
+        }
+
+        function renderFileList(files) {
+            fileListElem.innerHTML = '';
+            if (files.length === 0) {
+                 fileListElem.innerHTML = `<li class="text-sm text-gray-500">No files attached yet.</li>`;
+                 return;
+            }
+            files.forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center justify-between p-2 bg-gray-100 rounded-md';
+                const sourceColors = { 'LMS': 'bg-blue-100 text-blue-800', 'own notes': 'bg-green-100 text-green-800', 'others': 'bg-gray-200 text-gray-800' };
+                const tagColor = sourceColors[file.source] || 'bg-yellow-100 text-yellow-800';
+                li.innerHTML = `
+                    <div class="flex items-center truncate">
+                        <span class="tag ${tagColor}">${file.source}</span>
+                        <span class="text-sm font-medium truncate" title="${file.name}">${file.name}</span>
+                    </div>
+                    <button class="remove-file-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 flex-shrink-0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                `;
+                li.querySelector('.remove-file-btn').addEventListener('click', () => removeFile(file));
+                fileListElem.appendChild(li);
+            });
+        }
+        
+        async function saveField(fieldName, content) {
+            if (!currentSubject || !userId) return;
+            const docRef = doc(db, `artifacts/${appId}/users/${userId}/subjects/${currentSubject}`);
+            try {
+                await setDoc(docRef, { [fieldName]: content }, { merge: true });
+                showSaveStatus('Saved!');
+            } catch (error) {
+                console.error(`Error saving ${fieldName}:`, error);
+                showSaveStatus('Save failed', true);
+            }
+        }
+
+        function showSaveStatus(message, isError = false) {
+            saveStatus.textContent = message;
+            saveStatus.className = `text-sm transition-opacity duration-300 opacity-100 ${isError ? 'text-red-500' : 'text-gray-500'}`;
+            if (!isError && message !== 'Saving...') {
+                setTimeout(() => { saveStatus.classList.add('opacity-0'); }, 2000);
+            }
+        }
+        
+        initialize();
+    </script>
+</body>
+</html>
+
